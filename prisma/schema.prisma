@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  name         String
+  vatPct       Float    @default(7)
+  servicePct   Float    @default(10)
+  promptpayNo  String?
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+  persons      Person[]
+  items        Item[]
+}
+
+model Person {
+  id        String    @id @default(uuid())
+  sessionId String
+  session   Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  name      String
+  paid      Boolean   @default(false)
+  paidAt    DateTime?
+  items     ItemPerson[]
+}
+
+model Item {
+  id        String       @id @default(uuid())
+  sessionId String
+  session   Session      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  name      String
+  price     Decimal      @db.Decimal(10,2)
+  persons   ItemPerson[]
+}
+
+model ItemPerson {
+  itemId   String
+  personId String
+  item     Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, personId])
+}
